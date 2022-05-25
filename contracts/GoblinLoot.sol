@@ -1,7 +1,11 @@
 //SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.0;
 
-import 'hardhat/console.sol';
+// xxx GOBLIN LOOT xxx
+
+// TODO: !!! ctrl+F all the TODOs before deployment... !!!
+
+// TODO: ascii art
 
 import '@rari-capital/solmate/src/tokens/ERC721.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
@@ -10,11 +14,13 @@ import '@openzeppelin/contracts/utils/Base64.sol';
 contract GoblinLoot is ERC721 {
 	using Strings for uint256;
 
+	uint256 public constant MAX_SUPPLY = 10000;
+	uint256 public totalSupply;
 
-	// TODO: add totalSupply counter (check smfers)
 	// TODO: add 24h timer to disable mint
-	// TODO: add OG goblin contract interface (check larmfs)
-
+	// TODO: add OG goblin contract interface (check larmfs) ??
+	// TODO: add creator addies
+	// TODO: implement BURN method from the solmate
 
 	// -------------------------------------------------------------------------------------------------- items
 	string[] private weapons = [
@@ -254,15 +260,31 @@ contract GoblinLoot is ERC721 {
 	// -------------------------------------------------------------------------------------------------- constructor
 	constructor() ERC721('GoblinLoot', 'GLOOT') {
 		// TODO: batch mint reserves to team
+
+		batchMint(msg.sender, 10);
 	}
 
-	// -------------------------------------------------------------------------------------------------- mint
-	// TODO: add internal batch mint for minting reserves to team
+	// -------------------------------------------------------------------------------------------------- error handling
+	error NotEnoughLoot();
 
-	// TODO: change this to an old fashioned MINT function with total supply accumulator
-	// leave public so constructor can call it (mint to our addies)
-	function claim(uint256 tokenId) public {
-		_safeMint(msg.sender, tokenId);
+	// -------------------------------------------------------------------------------------------------- mint
+	function batchMint(address _recipient, uint256 _amount) internal {
+		if (_amount > MAX_SUPPLY - totalSupply) revert NotEnoughLoot();
+		unchecked {
+			for (uint256 i = 1; i < _amount + 1; ++i) {
+				_safeMint(_recipient, totalSupply + i);
+			}
+			totalSupply += _amount;
+		}
+	}
+
+	function mint() public {
+		if (totalSupply == MAX_SUPPLY) revert NotEnoughLoot();
+
+		unchecked {
+			totalSupply++;
+		}
+		_safeMint(msg.sender, totalSupply);
 	}
 
 	// -------------------------------------------------------------------------------------------------- views
@@ -278,17 +300,23 @@ contract GoblinLoot is ERC721 {
 		uint256 rand = random(
 			string(abi.encodePacked(keyPrefix, Strings.toString(tokenId)))
 		);
+
 		string memory output = sourceArray[rand % sourceArray.length];
+
 		uint256 greatness = rand % 21;
+
 		if (greatness > 14) {
 			output = string(
 				abi.encodePacked(output, ' ', suffixes[rand % suffixes.length])
 			);
 		}
-		if (greatness >= 19) {
+
+		if (greatness > 18) {
 			string[2] memory name;
+
 			name[0] = namePrefixes[rand % namePrefixes.length];
 			name[1] = nameSuffixes[rand % nameSuffixes.length];
+
 			if (greatness == 19) {
 				output = string(
 					abi.encodePacked('"', name[0], ' ', name[1], '" ', output)
@@ -299,6 +327,7 @@ contract GoblinLoot is ERC721 {
 				);
 			}
 		}
+
 		return output;
 	}
 
@@ -404,7 +433,7 @@ contract GoblinLoot is ERC721 {
 			)
 		);
 
-		// TODO: MAKE THIS GOBLIN-EY
+		// TODO: MAKE THIS DESCRIPTION GOBLIN-EY
 		string memory json = Base64.encode(
 			bytes(
 				string(

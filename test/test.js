@@ -5,12 +5,12 @@ const { ethers } = require('hardhat');
 const CONTRACT_NAME = 'GoblinLoot';
 
 describe('Contract Test', () => {
-	let contract, owner, nonOwner;
+	let contract, deployer;
 
 	// --------------------------------------------------------------------- setup
 	before(async () => {
-		// Get test wallets
-		[owner, nonOwner] = await ethers.getSigners();
+		// Get test wallet
+		[deployer] = await ethers.getSigners();
 
 		// Deploy contract
 		console.info(`\n🚧 deploying ${CONTRACT_NAME} contract...`);
@@ -23,16 +23,26 @@ describe('Contract Test', () => {
 
 	// --------------------------------------------------------------------- tests
 
-	
+	it('Should batch mint on deployment', async () => {
+		const userBalance = await contract.balanceOf(deployer.address);
+		expect(userBalance.toNumber()).to.be.gt(0);
+	});
 
-	// it('Should deploy with correct owner', async () => {
-	// 	expect(await contract.owner()).to.equal(owner.address);
-	// });
+	it('Should mint a loot sack', async () => {
+		const userBalanceBefore = await contract.balanceOf(deployer.address);
 
-	// it('Should not update owner from unauthorized address', async () => {
-	// 	await expect(contract.connect(nonOwner).setOwner(nonOwner.address)).to.be
-	// 		.reverted;
-	// });
+		await expect(await contract.connect(deployer).mint())
+			.to.emit(contract, 'Transfer')
+			.withArgs(
+				ethers.constants.AddressZero,
+				deployer.address,
+				await contract.totalSupply()
+			);
 
+		const userBalanceAfter = await contract.balanceOf(deployer.address);
 
+		expect(userBalanceAfter.toNumber()).to.equal(
+			userBalanceBefore.toNumber() + 1
+		);
+	});
 });
