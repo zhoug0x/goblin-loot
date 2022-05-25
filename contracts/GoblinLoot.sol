@@ -260,12 +260,12 @@ contract GoblinLoot is ERC721 {
 	// -------------------------------------------------------------------------------------------------- constructor
 	constructor() ERC721('GoblinLoot', 'GLOOT') {
 		// TODO: batch mint reserves to team
-
 		batchMint(msg.sender, 10);
 	}
 
 	// -------------------------------------------------------------------------------------------------- error handling
 	error NotEnoughLoot();
+	error NoSackExists();
 
 	// -------------------------------------------------------------------------------------------------- mint
 	function batchMint(address _recipient, uint256 _amount) internal {
@@ -282,26 +282,26 @@ contract GoblinLoot is ERC721 {
 		if (totalSupply == MAX_SUPPLY) revert NotEnoughLoot();
 
 		unchecked {
-			totalSupply++;
+			++totalSupply;
 		}
 		_safeMint(msg.sender, totalSupply);
 	}
 
 	// -------------------------------------------------------------------------------------------------- views
-	function random(string memory input) internal pure returns (uint256) {
-		return uint256(keccak256(abi.encodePacked('AUU', input, 'UUGH')));
+	function random(string memory _input) internal pure returns (uint256) {
+		return uint256(keccak256(abi.encodePacked('AUU', _input, 'UUGH')));
 	}
 
 	function pluck(
-		uint256 tokenId,
-		string memory keyPrefix,
-		string[] memory sourceArray
+		uint256 _tokenId,
+		string memory _keyPrefix,
+		string[] memory _sourceArray
 	) internal view returns (string memory) {
 		uint256 rand = random(
-			string(abi.encodePacked(keyPrefix, Strings.toString(tokenId)))
+			string(abi.encodePacked(_keyPrefix, Strings.toString(_tokenId)))
 		);
 
-		string memory output = sourceArray[rand % sourceArray.length];
+		string memory output = _sourceArray[rand % _sourceArray.length];
 
 		uint256 greatness = rand % 21;
 
@@ -331,78 +331,80 @@ contract GoblinLoot is ERC721 {
 		return output;
 	}
 
-	function getWeapon(uint256 tokenId) public view returns (string memory) {
-		return pluck(tokenId, 'WEAPON', weapons);
+	function getWeapon(uint256 _tokenId) public view returns (string memory) {
+		return pluck(_tokenId, 'WEAPON', weapons);
 	}
 
-	function getChest(uint256 tokenId) public view returns (string memory) {
-		return pluck(tokenId, 'CHEST', chestArmor);
+	function getChest(uint256 _tokenId) public view returns (string memory) {
+		return pluck(_tokenId, 'CHEST', chestArmor);
 	}
 
-	function getHead(uint256 tokenId) public view returns (string memory) {
-		return pluck(tokenId, 'HEAD', headArmor);
+	function getHead(uint256 _tokenId) public view returns (string memory) {
+		return pluck(_tokenId, 'HEAD', headArmor);
 	}
 
-	function getWaist(uint256 tokenId) public view returns (string memory) {
-		return pluck(tokenId, 'WAIST', waistArmor);
+	function getWaist(uint256 _tokenId) public view returns (string memory) {
+		return pluck(_tokenId, 'WAIST', waistArmor);
 	}
 
-	function getFoot(uint256 tokenId) public view returns (string memory) {
-		return pluck(tokenId, 'FOOT', footArmor);
+	function getFoot(uint256 _tokenId) public view returns (string memory) {
+		return pluck(_tokenId, 'FOOT', footArmor);
 	}
 
-	function getHand(uint256 tokenId) public view returns (string memory) {
-		return pluck(tokenId, 'HAND', handArmor);
+	function getHand(uint256 _tokenId) public view returns (string memory) {
+		return pluck(_tokenId, 'HAND', handArmor);
 	}
 
-	function getNeck(uint256 tokenId) public view returns (string memory) {
-		return pluck(tokenId, 'NECK', necklaces);
+	function getNeck(uint256 _tokenId) public view returns (string memory) {
+		return pluck(_tokenId, 'NECK', necklaces);
 	}
 
-	function getRing(uint256 tokenId) public view returns (string memory) {
-		return pluck(tokenId, 'RING', rings);
+	function getRing(uint256 _tokenId) public view returns (string memory) {
+		return pluck(_tokenId, 'RING', rings);
 	}
 
-	function tokenURI(uint256 tokenId)
+	function tokenURI(uint256 _tokenId)
 		public
 		view
 		override
 		returns (string memory)
 	{
+		if (_tokenId == 0 || _tokenId > totalSupply) revert NoSackExists();
+
 		string[17] memory parts;
 		parts[
 			0
 		] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
 
-		parts[1] = getWeapon(tokenId);
+		parts[1] = getWeapon(_tokenId);
 
 		parts[2] = '</text><text x="10" y="40" class="base">';
 
-		parts[3] = getChest(tokenId);
+		parts[3] = getChest(_tokenId);
 
 		parts[4] = '</text><text x="10" y="60" class="base">';
 
-		parts[5] = getHead(tokenId);
+		parts[5] = getHead(_tokenId);
 
 		parts[6] = '</text><text x="10" y="80" class="base">';
 
-		parts[7] = getWaist(tokenId);
+		parts[7] = getWaist(_tokenId);
 
 		parts[8] = '</text><text x="10" y="100" class="base">';
 
-		parts[9] = getFoot(tokenId);
+		parts[9] = getFoot(_tokenId);
 
 		parts[10] = '</text><text x="10" y="120" class="base">';
 
-		parts[11] = getHand(tokenId);
+		parts[11] = getHand(_tokenId);
 
 		parts[12] = '</text><text x="10" y="140" class="base">';
 
-		parts[13] = getNeck(tokenId);
+		parts[13] = getNeck(_tokenId);
 
 		parts[14] = '</text><text x="10" y="160" class="base">';
 
-		parts[15] = getRing(tokenId);
+		parts[15] = getRing(_tokenId);
 
 		parts[16] = '</text></svg>';
 
@@ -439,7 +441,7 @@ contract GoblinLoot is ERC721 {
 				string(
 					abi.encodePacked(
 						'{"name": "sack #',
-						Strings.toString(tokenId),
+						Strings.toString(_tokenId),
 						'", "description": "Loot is randomized adventurer gear generated and stored on chain. Stats, images, and other functionality are intentionally omitted for others to interpret. Feel free to use Loot in any way you want.", "image": "data:image/svg+xml;base64,',
 						Base64.encode(bytes(output)),
 						'"}'
