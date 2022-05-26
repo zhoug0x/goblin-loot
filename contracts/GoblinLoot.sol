@@ -688,11 +688,9 @@ contract GoblinLoot is ERC721 {
 		parts[10] = buildAttr('trinket_three', getTrinket3(_tokenId));
 		parts[11] = string(
 			abi.encodePacked(
-				'{"trait_type": "',
-				'shinee',
-				'", "value": ',
+				'{"trait_type": "shinee", "value": ',
 				Strings.toString(getShinee(_tokenId)),
-				'}]'
+				', "max_value": 10}]'
 			)
 		);
 
