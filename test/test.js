@@ -22,6 +22,11 @@ describe('Contract Test', () => {
 	});
 
 	// --------------------------------------------------------------------- tests
+	it('Should fetch mint closing time', async () => {
+		const closingTime = await contract.mintClosingTime();
+		console.log({closes: closingTime.toNumber(), timeNow: Date.now()})
+	});
+
 	it('Should fetch sack URI', async () => {
 		const totalSupply = await contract.totalSupply();
 		await expect(contract.tokenURI(totalSupply.toNumber())).to.not.be.reverted;

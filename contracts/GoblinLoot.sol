@@ -7,6 +7,10 @@ pragma solidity ^0.8.0;
 
 // TODO: ascii art
 
+// TODO: add creator addies, batch mint to them in the constructor
+
+// TODO: MAKE JSON DESCRIPTION GOBLIN-EY
+
 import '@rari-capital/solmate/src/tokens/ERC721.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
@@ -16,15 +20,10 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 	using Strings for uint256;
 
 	uint256 public constant MAX_SUPPLY = 10000;
+	uint256 public constant MINT_DURATION = 24 hours;
 	uint256 public totalSupply;
+	uint256 public mintClosingTime;
 	bool public mintIsActive;
-
-	ERC721 internal goblintown =
-		ERC721(0xbCe3781ae7Ca1a5e050Bd9C4c77369867eBc307e);
-
-	// TODO: add 24h timer to disable mint (mint function has an auto switch, extend it to switch timer as well)
-
-	// TODO: add creator addies
 
 	// -------------------------------------------------------------------------------------------------- items
 	string[] private weapons = [
@@ -308,6 +307,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 
 	// -------------------------------------------------------------------------------------------------- constructor
 	constructor() ERC721('GoblinLoot', 'GLOOT') {
+		mintClosingTime = block.timestamp + MINT_DURATION;
 		mintIsActive = true;
 
 		// TODO: batch mint reserves to team
@@ -340,9 +340,8 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		}
 		_safeMint(msg.sender, totalSupply);
 
-		// if this mint is last of the supply, close mint
-		// TODO: add timelock check
-		if (totalSupply == MAX_SUPPLY) {
+		// if this mint is last of the supply, or mint time window is up, close mint
+		if (totalSupply == MAX_SUPPLY || block.timestamp > mintClosingTime) {
 			mintIsActive = false;
 		}
 	}
@@ -569,7 +568,6 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		);
 		output = string(abi.encodePacked(output, parts[17], parts[18]));
 
-		// TODO: MAKE THIS DESCRIPTION GOBLIN-EY
 		string memory json = Base64.encode(
 			bytes(
 				string(
