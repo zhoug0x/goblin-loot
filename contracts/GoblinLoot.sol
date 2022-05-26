@@ -8,20 +8,23 @@ pragma solidity ^0.8.0;
 // TODO: ascii art
 
 import '@rari-capital/solmate/src/tokens/ERC721.sol';
+import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
 import '@openzeppelin/contracts/utils/Base64.sol';
 
-contract GoblinLoot is ERC721 {
+contract GoblinLoot is ERC721, ReentrancyGuard {
 	using Strings for uint256;
 
 	uint256 public constant MAX_SUPPLY = 10000;
 	uint256 public totalSupply;
 	bool public mintIsActive;
 
-	// TODO: add 24h timer to disable mint
-	// TODO: add OG goblin contract interface (check larmfs) ??
+	ERC721 internal goblintown =
+		ERC721(0xbCe3781ae7Ca1a5e050Bd9C4c77369867eBc307e);
+
+	// TODO: add 24h timer to disable mint (mint function has an auto switch, extend it to switch timer as well)
+
 	// TODO: add creator addies
-	// TODO: implement BURN method from the solmate
 
 	// -------------------------------------------------------------------------------------------------- items
 	string[] private weapons = [
@@ -315,6 +318,7 @@ contract GoblinLoot is ERC721 {
 	error MintInactive();
 	error NotEnoughLoot();
 	error NotAuthorized();
+	error NotMinted();
 
 	// -------------------------------------------------------------------------------------------------- writes
 	function batchMint(address _recipient, uint256 _amount) internal {
@@ -327,7 +331,7 @@ contract GoblinLoot is ERC721 {
 		}
 	}
 
-	function mint() public {
+	function mint() public nonReentrant {
 		if (!mintIsActive) revert MintInactive();
 		if (totalSupply == MAX_SUPPLY) revert NotEnoughLoot();
 
@@ -343,10 +347,10 @@ contract GoblinLoot is ERC721 {
 		}
 	}
 
-	function burn(uint256 _tokenId) public {
+	function burn(uint256 _tokenId) public nonReentrant {
 		if (
-			msg.sender != address(ownerOf(_tokenId)) ||
-			isApprovedForAll[ownerOf(_tokenId)][msg.sender]
+			msg.sender != address(_ownerOf[_tokenId]) ||
+			isApprovedForAll[_ownerOf[_tokenId]][msg.sender]
 		) revert NotAuthorized();
 
 		_burn(_tokenId);
@@ -494,6 +498,8 @@ contract GoblinLoot is ERC721 {
 		override
 		returns (string memory)
 	{
+		if (_ownerOf[_tokenId] == address(0)) revert NotMinted();
+
 		string[19] memory parts;
 		parts[
 			0
@@ -580,5 +586,25 @@ contract GoblinLoot is ERC721 {
 		output = string(abi.encodePacked('data:application/json;base64,', json));
 
 		return output;
+	}
+
+	function getSacksOwned(address _address)
+		public
+		view
+		returns (uint256[] memory ownedIds)
+	{
+		uint256 balance = _balanceOf[_address];
+		uint256 idCounter = 1;
+		uint256 ownedCounter = 0;
+		ownedIds = new uint256[](balance);
+
+		while (ownedCounter < balance && idCounter < MAX_SUPPLY + 1) {
+			address ownerAddress = _ownerOf[idCounter];
+			if (ownerAddress == _address) {
+				ownedIds[ownedCounter] = idCounter;
+				ownedCounter++;
+			}
+			idCounter++;
+		}
 	}
 }

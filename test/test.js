@@ -22,12 +22,14 @@ describe('Contract Test', () => {
 	});
 
 	// --------------------------------------------------------------------- tests
+	it('Should fetch sack URI', async () => {
+		const totalSupply = await contract.totalSupply();
+		await expect(contract.tokenURI(totalSupply.toNumber())).to.not.be.reverted;
+	});
 
-	it('LOG UNMINTED TOKENURI', async () => {
-		const result = await contract.tokenURI(1);
-
-		console.log(result);
-		
+	it('Should revert if fetching non-existant sack URI', async () => {
+		const totalSupply = await contract.totalSupply();
+		await expect(contract.tokenURI(totalSupply.toNumber() + 1)).to.be.reverted;
 	});
 
 	it('Should batch mint on deployment', async () => {

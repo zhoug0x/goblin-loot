@@ -7,7 +7,7 @@ require('dotenv').config();
 const COMPILER_VERSION = '0.8.13';
 const OPTIMIZATION_RUNS = 500; // leave as 0 to disable optimization
 const LOCALHOST_CHAIN_ID = 31337; // local blockchain instance chain ID (default is Metamask)
-const REPORT_GAS = true;
+const REPORT_GAS = false;
 const GAS_PRICE = 35; // set custom gas price in gwei, leave null to fetch market price
 // ----------------
 
