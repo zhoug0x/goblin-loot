@@ -5,36 +5,40 @@ pragma solidity ^0.8.0;
 
 // TODO: !!! ctrl+F all the TODOs before deployment... !!!
 
-// TODO: PUT OS-FRIENDLY TRAITS ON CHAIN
-
 // TODO: ascii art
 
-// TODO: something weird with the random function - call goblintown contract or smth
-
-// TODO: add creator addies, batch mint to them in the constructor
-
-// TODO: MAKE JSON DESCRIPTION GOBLIN-EY
-
-// TODO: in constructor, make msg.sender = deployer --> deployer has immutable owner perms!
-
-// TODO: batch mint 5 for a tip above 0 - DEPLOYER CAN WITHDRAW
+// TODO: PUT OS-FRIENDLY TRAITS ON CHAIN
 
 import '@rari-capital/solmate/src/tokens/ERC721.sol';
-import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
 import '@openzeppelin/contracts/utils/Base64.sol';
 
-contract GoblinLoot is ERC721, ReentrancyGuard {
+contract GoblinLoot is ERC721 {
 	using Strings for uint256;
 
-	// -------------------------------------------------------------------------------------------------- public state
 	uint256 public constant MAX_SUPPLY = 10000;
 	uint256 public constant MINT_DURATION = 24 hours;
 	uint256 public totalSupply;
 	uint256 public mintClosingTime;
 	bool public mintIsActive;
+	address public tipWithdrawer;
+	
+	address private imp0ster = 0x023006cED81c7Bf6D17A5bC1e1B40104114d0019;
+	address private zhoug = 0xc99547f73B0Aa2C69E56849e8986137776D72474;
 
-	// -------------------------------------------------------------------------------------------------- item slot keys
+	// -------------------------------------------------------------------------------------------------- constructor
+	constructor() ERC721('GoblinLoot', 'GLOOT') {
+		tipWithdrawer = msg.sender;
+		mintClosingTime = block.timestamp + MINT_DURATION;
+		mintIsActive = true;
+
+		// TODO: uncomment imp & change to sender to zhoug when deploying to mainnet!
+		// _batchMint(imp0ster, 50);
+		// _batchMint(zhoug, 50);
+		_batchMint(msg.sender, 50);
+	}
+
+	// -------------------------------------------------------------------------------------------------- slot keys
 	uint256 internal constant SLOT_WEAP = 1;
 	uint256 internal constant SLOT_HEAD = 2;
 	uint256 internal constant SLOT_BODY = 3;
@@ -57,8 +61,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'copper',
 		'tin',
 		'goblinsteel',
-		'scrap',
-		'reinforced'
+		'scrap'
 	];
 
 	string[] internal lightMaterials = [
@@ -72,7 +75,8 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'scrap',
 		'burlap',
 		'goblinmail',
-		'paper'
+		'paper',
+		'snakeskin '
 	];
 
 	// -------------------------------------------------------------------------------------------------- items
@@ -181,90 +185,96 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'iron ring'
 	];
 
-	string[] internal trinkets = [
-		'potato',
-		'jar',
-		'tooth',
-		'jawbone',
-		'pickle',
+	string[] internal trinkets1 = [
 		'pipe',
-		'ruby',
-		'herb pouch',
 		'sundial',
-		'gasket',
-		'dandelions',
-		'sapphire',
-		'diamond',
 		'clock',
-		'cog',
-		'mushroom',
-		'emerald',
 		'bellows',
-		'sardines',
-		'sulfur',
-		'sailcloth',
-		'wineskin',
 		'brush',
 		'comb',
-		'shears',
 		'candle',
 		'candlestick',
 		'torch',
 		'scratcher',
 		'gaslamp',
+		'shoehorn',
+		'dice',
+		'spoon',
+		'periscope',
+		'spyglass',
+		'lute',
+		'drum',
+		'tamborine',
+		'whistle',
+		'pocketwatch',
+		'compass',
+		'whip'
+	];
+
+	string[] internal trinkets2 = [
+		'potato',
+		'pickle',
+		'ruby',
+		'herb pouch',
+		'tooth',
+		'jawbone',
+		'dandelions',
+		'sapphire',
+		'diamond',
+		'mushroom',
+		'emerald',
+		'sardines',
+		'sulfur',
 		'seeds',
 		'beans',
-		'???',
 		'quicksilver',
-		'shoehorn',
-		'nails',
-		'screws',
-		'dice',
 		'skull',
 		'blueberries',
-		'stein',
-		'teapot',
 		'egg',
 		'meat',
-		'scraper',
 		'oil',
-		'spoon',
 		'chalk',
 		'charcoal',
 		'twigs',
 		'sweets',
-		'thread',
-		'sewing needle',
 		'amethyst',
 		'obsidian',
-		'mallet',
 		'pebbles',
-		'periscope',
-		'spyglass',
-		'grappling hook',
-		'rope',
-		'vial',
-		'flask',
-		'paintbrush',
-		'lute',
-		'drum',
-		'tamborine',
-		'bowl',
-		'whistle',
 		'goo',
 		'rose',
 		'seaweed',
+		'feathers'
+	];
+
+	string[] internal trinkets3 = [
+		'sailcloth',
+		'cog',
+		'rope',
+		'vial',
+		'flask',
+		'jar',
+		'gasket',
+		'shears',
+		'nails',
+		'screws',
+		'thread',
+		'sewing needle',
+		'mallet',
 		'fishing rod',
 		'grindstone',
-		'feathers',
-		'pocketwatch',
-		'compass',
+		'bowl',
+		'paintbrush',
 		'scroll',
-		'whip'
+		'scraper',
+		'???',
+		'grappling hook',
+		'sand',
+		'stein',
+		'teapot',
+		'wineskin'
 	];
 
 	// -------------------------------------------------------------------------------------------------- prefix/suffix
-
 	string[] internal jewelryPrefixes = [
 		'crude',
 		'flawed',
@@ -277,7 +287,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'tainted',
 		'chipped',
 		'worn',
-		'sooty'
+		'sooty',
 		'stolen'
 	];
 
@@ -325,7 +335,8 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 	];
 
 	string[] internal suffixes = [
-		'of RRRRRRAAAAAHHH',
+		'of RRRAAAAAHHH',
+		'of AAAUUUGGHHH',
 		'of power',
 		'of sneak',
 		'of strike',
@@ -340,34 +351,31 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'of havoc',
 		'of rapture',
 		'of terror',
-		'of the mountains',
+		'of the cliffs',
 		'of the swamp',
 		'of the bog',
 		'of the rift',
 		'of the sewers',
 		'of the woods',
 		'of the caves',
-		'of the volcano',
 		'of the grave'
 	];
 
-	// -------------------------------------------------------------------------------------------------- constructor
-	constructor() ERC721('GoblinLoot', 'GLOOT') {
-		mintClosingTime = block.timestamp + MINT_DURATION;
-		mintIsActive = true;
-		batchMint(msg.sender, 10);
-	}
-
-	// -------------------------------------------------------------------------------------------------- error handling
+	// -------------------------------------------------------------------------------------------------- errors & modifiers
 	error MintInactive();
 	error NotEnoughLoot();
 	error NotAuthorized();
 	error NotMinted();
 
+	modifier closeMint() {
+		_;
+		if (totalSupply == MAX_SUPPLY || block.timestamp > mintClosingTime) {
+			mintIsActive = false;
+		}
+	}
+
 	// -------------------------------------------------------------------------------------------------- writes
-	function batchMint(address _recipient, uint256 _amount) internal {
-		if (!mintIsActive) revert MintInactive();
-		if (_amount > MAX_SUPPLY - totalSupply) revert NotEnoughLoot();
+	function _batchMint(address _recipient, uint256 _amount) private {
 		unchecked {
 			for (uint256 i = 1; i < _amount + 1; ++i) {
 				_safeMint(_recipient, totalSupply + i);
@@ -376,28 +384,39 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		}
 	}
 
-	function mint() public nonReentrant {
+	function mint() public closeMint {
 		if (!mintIsActive) revert MintInactive();
 		if (totalSupply == MAX_SUPPLY) revert NotEnoughLoot();
-
 		unchecked {
 			++totalSupply;
 		}
 		_safeMint(msg.sender, totalSupply);
-
-		// if this mint is last of the supply, or mint time window is up, close mint
-		if (totalSupply == MAX_SUPPLY || block.timestamp > mintClosingTime) {
-			mintIsActive = false;
-		}
 	}
 
-	function burn(uint256 _tokenId) public nonReentrant {
+	function mintThreeWithATip() public payable closeMint {
+		if (!mintIsActive) revert MintInactive();
+		if (totalSupply + 3 > MAX_SUPPLY) revert NotEnoughLoot();
+		if (msg.value <= 0) revert NotAuthorized();
+		_batchMint(msg.sender, 3);
+	}
+
+	function burn(uint256 _tokenId) public {
 		if (
 			msg.sender != address(_ownerOf[_tokenId]) ||
 			isApprovedForAll[_ownerOf[_tokenId]][msg.sender]
 		) revert NotAuthorized();
-
 		_burn(_tokenId);
+	}
+
+	function updateTipWithdrawer(address _newWithdrawer) public {
+		if (msg.sender != tipWithdrawer) revert NotAuthorized();
+		tipWithdrawer = _newWithdrawer;
+	}
+
+	function withdrawTips() external payable {
+		if (msg.sender != tipWithdrawer) revert NotAuthorized();
+		(bool os, ) = payable(tipWithdrawer).call{value: address(this).balance}('');
+		require(os);
 	}
 
 	// -------------------------------------------------------------------------------------------------- reads
@@ -444,7 +463,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		string[] memory _sourceArray
 	) internal view returns (string memory) {
 		uint256 rand = random(_tokenId, _slotKey);
-		uint256 greatness = rand % 69;
+		uint256 AUUUGH = rand % 69;
 		string memory output = _sourceArray[rand % _sourceArray.length];
 
 		if (isHeavyMaterial(_slotKey)) {
@@ -459,12 +478,13 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 			output = join(jewelryPrefixes[rand % jewelryPrefixes.length], output);
 		}
 
-		if (greatness < 23 || isTrinket(_slotKey)) {
+		// no prefix or suffix
+		if (AUUUGH < 23 || isTrinket(_slotKey)) {
 			return output;
 		}
 
 		// both prefix & suffix
-		if (greatness > 55) {
+		if (AUUUGH > 55) {
 			// if jewelry, apply only the suffix
 			if (isJewelry(_slotKey)) {
 				return join(output, suffixes[rand % suffixes.length]);
@@ -478,7 +498,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		}
 
 		// prefix only
-		if (greatness > 40 && !isJewelry(_slotKey)) {
+		if (AUUUGH > 40 && !isJewelry(_slotKey)) {
 			return join(prefixes[rand % prefixes.length], output);
 		}
 
@@ -514,16 +534,20 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		return pluck(_tokenId, SLOT_RING, rings);
 	}
 
-	function getTrinketOne(uint256 _tokenId) public view returns (string memory) {
-		return pluck(_tokenId, SLOT_TRI1, trinkets);
+	function getTrinket1(uint256 _tokenId) public view returns (string memory) {
+		return pluck(_tokenId, SLOT_TRI1, trinkets1);
 	}
 
-	function getTrinketTwo(uint256 _tokenId) public view returns (string memory) {
-		return pluck(_tokenId, SLOT_TRI2, trinkets);
+	function getTrinket2(uint256 _tokenId) public view returns (string memory) {
+		return pluck(_tokenId, SLOT_TRI2, trinkets2);
 	}
 
-	function getShiniez(uint256 _tokenId) public pure returns (uint256) {
-		return random(_tokenId, 420) % 10;
+	function getTrinket3(uint256 _tokenId) public view returns (string memory) {
+		return pluck(_tokenId, SLOT_TRI2, trinkets3);
+	}
+
+	function getShinee(uint256 _tokenId) public pure returns (uint256) {
+		return (random(_tokenId, 420) % 10) + 1;
 	}
 
 	function tokenURI(uint256 _tokenId)
@@ -534,7 +558,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 	{
 		if (_ownerOf[_tokenId] == address(0)) revert NotMinted();
 
-		string[22] memory parts;
+		string[24] memory parts;
 		parts[
 			0
 		] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: #AFB886; font-family: monospace; font-size: 16px; letter-spacing: -0.05em; }</style><rect width="100%" height="100%" fill="#242910" /><text x="10" y="20" class="base">';
@@ -552,13 +576,17 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		parts[12] = '</text><text x="10" y="140" class="base">';
 		parts[13] = getRing(_tokenId);
 		parts[14] = '</text><text x="10" y="160" class="base">';
-		parts[15] = getTrinketOne(_tokenId);
+		parts[15] = getTrinket1(_tokenId);
 		parts[16] = '</text><text x="10" y="180" class="base">';
-		parts[17] = getTrinketTwo(_tokenId);
-		parts[18] = '</text><text x="10" y="200" class="base">--------------------';
-		parts[19] = '</text><text x="10" y="220" class="base">shiniez: ';
-		parts[20] = Strings.toString(getShiniez(_tokenId));
-		parts[21] = '</text></svg>';
+		parts[17] = getTrinket2(_tokenId);
+		parts[18] = '</text><text x="10" y="200" class="base">';
+		parts[19] = getTrinket3(_tokenId);
+		parts[
+			20
+		] = '</text><text x="10" y="220" class="base">---------------------';
+		parts[21] = '</text><text x="10" y="240" class="base">';
+		parts[22] = Strings.toString(getShinee(_tokenId));
+		parts[23] = ' shinee</text></svg>';
 
 		string memory svg = string(
 			abi.encodePacked(
@@ -593,7 +621,9 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 				parts[18],
 				parts[19],
 				parts[20],
-				parts[21]
+				parts[21],
+				parts[22],
+				parts[23]
 			)
 		);
 

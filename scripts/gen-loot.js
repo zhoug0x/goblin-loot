@@ -34,7 +34,7 @@ async function main() {
 	}
 
 	console.log(lootList);
-	// console.log(svgList);
+	// console.log(svgList[0].svg);
 }
 
 main()

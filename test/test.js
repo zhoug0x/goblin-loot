@@ -1,5 +1,5 @@
 const { before } = require('mocha');
-const { expect } = require('chai');
+const { expect, assert } = require('chai');
 const { ethers } = require('hardhat');
 
 const CONTRACT_NAME = 'GoblinLoot';
@@ -46,19 +46,13 @@ describe('Contract Test', () => {
 		await expect(contract.tokenURI(totalSupply.toNumber() + 1)).to.be.reverted;
 	});
 
-	it('Should batch mint on deployment', async () => {
-		const userBalance = await contract.balanceOf(deployer.address);
-		const totalSupply = await contract.totalSupply();
-		expect(userBalance).to.be.eq(totalSupply);
-	});
-
 	it('Should mint a loot sack', async () => {
 		const userBalanceBefore = await contract.balanceOf(deployer.address);
 
 		await expect(await contract.connect(deployer).mint())
 			.to.emit(contract, 'Transfer')
 			.withArgs(
-				ethers.constants.AddressZero,
+				hre.ethers.constants.AddressZero,
 				deployer.address,
 				await contract.totalSupply()
 			);
@@ -67,6 +61,55 @@ describe('Contract Test', () => {
 
 		expect(userBalanceAfter.toNumber()).to.equal(
 			userBalanceBefore.toNumber() + 1
+		);
+	});
+
+	it('Should revert tip mint if no tip sent', async () => {
+		await expect(contract.connect(rando).mintThreeWithATip()).to.be.reverted;
+	});
+
+	it('Should batch tip mint', async () => {
+		await expect(
+			await contract
+				.connect(rando)
+				.mintThreeWithATip({ value: hre.ethers.utils.parseEther('100') })
+		)
+			.to.emit(contract, 'Transfer')
+			.withArgs(
+				hre.ethers.constants.AddressZero,
+				rando.address,
+				await contract.totalSupply()
+			);
+
+		const contractBalance = await hre.ethers.provider.getBalance(
+			contract.address
+		);
+
+		expect(contractBalance).to.equal(hre.ethers.utils.parseEther('100'));
+	});
+
+	it('Should not withdraw tips to an unauthorized address', async () => {
+		await expect(contract.connect(rando).withdrawTips()).to.be.reverted;
+	});
+
+	it('Should withdraw tips to tip withdrawer address', async () => {
+		const withdrawAddress = await contract.tipWithdrawer();
+		const walletBalBefore = await hre.ethers.provider.getBalance(
+			withdrawAddress
+		);
+
+		await contract.withdrawTips();
+		const contractBalAfter = await hre.ethers.provider.getBalance(
+			contract.address
+		);
+		const walletBalAfter = await hre.ethers.provider.getBalance(
+			withdrawAddress
+		);
+
+		expect(contractBalAfter).to.equal(0);
+		assert(
+			walletBalAfter.gt(walletBalBefore),
+			'Withdrawal wallet did not increase in balance after withdrawal'
 		);
 	});
 
@@ -86,4 +129,4 @@ describe('Contract Test', () => {
 		await expect(contract.connect(deployer).burn(2)).to.not.be.reverted;
 		await expect(contract.connect(deployer).ownerOf(2)).to.be.reverted;
 	});
-});
+}); // END
