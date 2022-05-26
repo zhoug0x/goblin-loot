@@ -5,6 +5,8 @@ pragma solidity ^0.8.0;
 
 // TODO: !!! ctrl+F all the TODOs before deployment... !!!
 
+// TODO: PUT OS-FRIENDLY TRAITS ON CHAIN
+
 // TODO: ascii art
 
 // TODO: something weird with the random function - call goblintown contract or smth
@@ -44,7 +46,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 	uint256 internal constant SLOT_TRI2 = 9;
 
 	// -------------------------------------------------------------------------------------------------- materials
-	string[] public heavyMaterials = [
+	string[] internal heavyMaterials = [
 		'bone',
 		'stone',
 		'bronze',
@@ -59,7 +61,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'reinforced'
 	];
 
-	string[] public lightMaterials = [
+	string[] internal lightMaterials = [
 		'linen',
 		'fur',
 		'leather',
@@ -74,7 +76,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 	];
 
 	// -------------------------------------------------------------------------------------------------- items
-	string[] private weapons = [
+	string[] internal weapons = [
 		'club',
 		'scythe',
 		'hammer',
@@ -95,7 +97,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'knife'
 	];
 
-	string[] private headGear = [
+	string[] internal headGear = [
 		'cap',
 		'hood',
 		'helmet',
@@ -111,7 +113,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'eyepatch'
 	];
 
-	string[] private bodyGear = [
+	string[] internal bodyGear = [
 		'husk',
 		'cloak',
 		'pads',
@@ -133,7 +135,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'cape'
 	];
 
-	string[] private handGear = [
+	string[] internal handGear = [
 		'hooks',
 		'gloves',
 		'bracers',
@@ -148,7 +150,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'talons'
 	];
 
-	string[] private footGear = [
+	string[] internal footGear = [
 		'sandals',
 		'boots',
 		'footwraps',
@@ -164,7 +166,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'clogs'
 	];
 
-	string[] private necklaces = [
+	string[] internal necklaces = [
 		'chain',
 		'amulet',
 		'locket',
@@ -172,14 +174,14 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'choker'
 	];
 
-	string[] private rings = [
+	string[] internal rings = [
 		'gold ring',
 		'silver ring',
 		'bronze ring',
 		'iron ring'
 	];
 
-	string[] private trinkets = [
+	string[] internal trinkets = [
 		'potato',
 		'jar',
 		'tooth',
@@ -263,7 +265,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 
 	// -------------------------------------------------------------------------------------------------- prefix/suffix
 
-	string[] private jewelryPrefixes = [
+	string[] internal jewelryPrefixes = [
 		'crude',
 		'flawed',
 		'rusty',
@@ -279,7 +281,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'stolen'
 	];
 
-	string[] private prefixes = [
+	string[] internal prefixes = [
 		'sparkling',
 		'shiny',
 		'slick',
@@ -322,7 +324,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		"builder's"
 	];
 
-	string[] private suffixes = [
+	string[] internal suffixes = [
 		'of RRRRRRAAAAAHHH',
 		'of power',
 		'of sneak',
@@ -399,7 +401,6 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 	}
 
 	// -------------------------------------------------------------------------------------------------- reads
-
 	function isHeavyMaterial(uint256 _key) internal pure returns (bool) {
 		return (_key == SLOT_WEAP || _key == SLOT_HEAD || _key == SLOT_HAND);
 	}
@@ -521,6 +522,101 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		return pluck(_tokenId, SLOT_TRI2, trinkets);
 	}
 
+	function getShiniez(uint256 _tokenId) public pure returns (uint256) {
+		return random(_tokenId, 420) % 10;
+	}
+
+	function tokenURI(uint256 _tokenId)
+		public
+		view
+		override
+		returns (string memory)
+	{
+		if (_ownerOf[_tokenId] == address(0)) revert NotMinted();
+
+		string[22] memory parts;
+		parts[
+			0
+		] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: #AFB886; font-family: monospace; font-size: 16px; letter-spacing: -0.05em; }</style><rect width="100%" height="100%" fill="#242910" /><text x="10" y="20" class="base">';
+		parts[1] = getWeapon(_tokenId);
+		parts[2] = '</text><text x="10" y="40" class="base">';
+		parts[3] = getHead(_tokenId);
+		parts[4] = '</text><text x="10" y="60" class="base">';
+		parts[5] = getBody(_tokenId);
+		parts[6] = '</text><text x="10" y="80" class="base">';
+		parts[7] = getHand(_tokenId);
+		parts[8] = '</text><text x="10" y="100" class="base">';
+		parts[9] = getFoot(_tokenId);
+		parts[10] = '</text><text x="10" y="120" class="base">';
+		parts[11] = getNeck(_tokenId);
+		parts[12] = '</text><text x="10" y="140" class="base">';
+		parts[13] = getRing(_tokenId);
+		parts[14] = '</text><text x="10" y="160" class="base">';
+		parts[15] = getTrinketOne(_tokenId);
+		parts[16] = '</text><text x="10" y="180" class="base">';
+		parts[17] = getTrinketTwo(_tokenId);
+		parts[18] = '</text><text x="10" y="200" class="base">--------------------';
+		parts[19] = '</text><text x="10" y="220" class="base">shiniez: ';
+		parts[20] = Strings.toString(getShiniez(_tokenId));
+		parts[21] = '</text></svg>';
+
+		string memory svg = string(
+			abi.encodePacked(
+				parts[0],
+				parts[1],
+				parts[2],
+				parts[3],
+				parts[4],
+				parts[5],
+				parts[6],
+				parts[7],
+				parts[8]
+			)
+		);
+		svg = string(
+			abi.encodePacked(
+				svg,
+				parts[9],
+				parts[10],
+				parts[11],
+				parts[12],
+				parts[13],
+				parts[14],
+				parts[15],
+				parts[16]
+			)
+		);
+		svg = string(
+			abi.encodePacked(
+				svg,
+				parts[17],
+				parts[18],
+				parts[19],
+				parts[20],
+				parts[21]
+			)
+		);
+
+		string memory json = Base64.encode(
+			bytes(
+				string(
+					abi.encodePacked(
+						'{"name": "sack #',
+						Strings.toString(_tokenId),
+						'", "description": "oooOooooo looka fren wats dis... shIneez?\\nYUMMZ\\n\\nmany manY shineEz, deez mine now teeheeE\\n\\nwat? wat it is?\\nAAAAAAAUUUUUGGGHHHHH shineez on da blockcHin?\\n\\nwaaaaaaaaitttt you wan sum?\\nokieee fren, u use how uuu want teeheeE", "image": "data:image/svg+xml;base64,',
+						Base64.encode(bytes(svg)),
+						'"}'
+					)
+				)
+			)
+		);
+
+		string memory output = string(
+			abi.encodePacked('data:application/json;base64,', json)
+		);
+		return output;
+	}
+
 	function getSacksOwned(address _address)
 		public
 		view
@@ -539,100 +635,5 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 			}
 			idCounter++;
 		}
-	}
-
-	function tokenURI(uint256 _tokenId)
-		public
-		view
-		override
-		returns (string memory)
-	{
-		if (_ownerOf[_tokenId] == address(0)) revert NotMinted();
-
-		string[19] memory parts;
-		parts[
-			0
-		] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: #AFB886; font-family: monospace; font-size: 16px; letter-spacing: -0.05em; }</style><rect width="100%" height="100%" fill="#242910" /><text x="10" y="20" class="base">';
-
-		parts[1] = getWeapon(_tokenId);
-
-		parts[2] = '</text><text x="10" y="40" class="base">';
-
-		parts[3] = getHead(_tokenId);
-
-		parts[4] = '</text><text x="10" y="60" class="base">';
-
-		parts[5] = getBody(_tokenId);
-
-		parts[6] = '</text><text x="10" y="80" class="base">';
-
-		parts[7] = getHand(_tokenId);
-
-		parts[8] = '</text><text x="10" y="100" class="base">';
-
-		parts[9] = getFoot(_tokenId);
-
-		parts[10] = '</text><text x="10" y="120" class="base">';
-
-		parts[11] = getNeck(_tokenId);
-
-		parts[12] = '</text><text x="10" y="140" class="base">';
-
-		parts[13] = getRing(_tokenId);
-
-		parts[14] = '</text><text x="10" y="160" class="base">';
-
-		parts[15] = getTrinketOne(_tokenId);
-
-		parts[16] = '</text><text x="10" y="180" class="base">';
-
-		parts[17] = getTrinketTwo(_tokenId);
-
-		parts[18] = '</text></svg>';
-
-		string memory output = string(
-			abi.encodePacked(
-				parts[0],
-				parts[1],
-				parts[2],
-				parts[3],
-				parts[4],
-				parts[5],
-				parts[6],
-				parts[7],
-				parts[8]
-			)
-		);
-		output = string(
-			abi.encodePacked(
-				output,
-				parts[9],
-				parts[10],
-				parts[11],
-				parts[12],
-				parts[13],
-				parts[14],
-				parts[15],
-				parts[16]
-			)
-		);
-		output = string(abi.encodePacked(output, parts[17], parts[18]));
-
-		string memory json = Base64.encode(
-			bytes(
-				string(
-					abi.encodePacked(
-						'{"name": "sack #',
-						Strings.toString(_tokenId),
-						'", "description": "Loot is randomized adventurer gear generated and stored on chain. Stats, images, and other functionality are intentionally omitted for others to interpret. Feel free to use Loot in any way you want.", "image": "data:image/svg+xml;base64,',
-						Base64.encode(bytes(output)),
-						'"}'
-					)
-				)
-			)
-		);
-		output = string(abi.encodePacked('data:application/json;base64,', json));
-
-		return output;
 	}
 }
