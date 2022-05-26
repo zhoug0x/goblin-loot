@@ -5,12 +5,12 @@ const { ethers } = require('hardhat');
 const CONTRACT_NAME = 'GoblinLoot';
 
 describe('Contract Test', () => {
-	let contract, deployer;
+	let contract, deployer, rando;
 
 	// --------------------------------------------------------------------- setup
 	before(async () => {
 		// Get test wallet
-		[deployer] = await ethers.getSigners();
+		[deployer, rando] = await ethers.getSigners();
 
 		// Deploy contract
 		console.info(`\n🚧 deploying ${CONTRACT_NAME} contract...`);
@@ -23,9 +23,17 @@ describe('Contract Test', () => {
 
 	// --------------------------------------------------------------------- tests
 
+	it('LOG UNMINTED TOKENURI', async () => {
+		const result = await contract.tokenURI(1);
+
+		console.log(result);
+		
+	});
+
 	it('Should batch mint on deployment', async () => {
 		const userBalance = await contract.balanceOf(deployer.address);
-		expect(userBalance.toNumber()).to.be.gt(0);
+		const totalSupply = await contract.totalSupply();
+		expect(userBalance).to.be.eq(totalSupply);
 	});
 
 	it('Should mint a loot sack', async () => {
@@ -44,5 +52,22 @@ describe('Contract Test', () => {
 		expect(userBalanceAfter.toNumber()).to.equal(
 			userBalanceBefore.toNumber() + 1
 		);
+	});
+
+	it('Should revert if burning unauthorized loot', async () => {
+		await expect(contract.connect(rando).burn(1)).to.be.reverted;
+	});
+
+	it('Should burn a loot sack', async () => {
+		await expect(contract.ownerOf(1)).to.not.be.reverted;
+		await expect(contract.burn(1)).to.not.be.reverted;
+		await expect(contract.ownerOf(1)).to.be.reverted;
+	});
+
+	it('Should burn a loot sack with approved address', async () => {
+		contract.setApprovalForAll(rando.address, true);
+		await expect(contract.connect(deployer).ownerOf(2)).to.not.be.reverted;
+		await expect(contract.connect(deployer).burn(2)).to.not.be.reverted;
+		await expect(contract.connect(deployer).ownerOf(2)).to.be.reverted;
 	});
 });

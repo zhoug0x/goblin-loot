@@ -23,7 +23,7 @@ async function main() {
 		const json = hre.ethers.utils.toUtf8String(jsonBytes);
 		const obj = JSON.parse(json);
 		svgList.push({ svg: obj.image });
-    
+
 		const imgBase64 = obj.image.split(',')[1];
 		const imgBytes = hre.ethers.utils.base64.decode(imgBase64);
 		const svg = hre.ethers.utils.toUtf8String(imgBytes);
@@ -33,8 +33,8 @@ async function main() {
 		lootList.push(output);
 	}
 
-	// console.log(lootList);
-	console.log(svgList);
+	console.log(lootList);
+	// console.log(svgList);
 }
 
 main()

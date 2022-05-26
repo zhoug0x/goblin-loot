@@ -16,6 +16,7 @@ contract GoblinLoot is ERC721 {
 
 	uint256 public constant MAX_SUPPLY = 10000;
 	uint256 public totalSupply;
+	bool public mintIsActive;
 
 	// TODO: add 24h timer to disable mint
 	// TODO: add OG goblin contract interface (check larmfs) ??
@@ -191,7 +192,7 @@ contract GoblinLoot is ERC721 {
 		'whip'
 	];
 
-	string[] private materialsOne = [
+	string[] private heavyMaterials = [
 		'bone',
 		'stone',
 		'bronze',
@@ -206,7 +207,7 @@ contract GoblinLoot is ERC721 {
 		'reinforced'
 	];
 
-	string[] private materialsTwo = [
+	string[] private lightMaterials = [
 		'linen',
 		'fur',
 		'leather',
@@ -221,11 +222,13 @@ contract GoblinLoot is ERC721 {
 		'studded leather'
 	];
 
-	string[] private materialsThree = [
+	// -------------------------------------------------------------------------------------------------- prefix/suffix
+
+	string[] private jewelryPrefixes = [
 		'crude',
 		'flawed',
 		'rusty',
-		'perfect',
+		'nice',
 		'fine',
 		'glowing',
 		'tainted',
@@ -234,7 +237,6 @@ contract GoblinLoot is ERC721 {
 		'stolen'
 	];
 
-	// -------------------------------------------------------------------------------------------------- prefix/suffix
 	string[] private prefixes = [
 		'shimmering',
 		'shiny',
@@ -303,13 +305,15 @@ contract GoblinLoot is ERC721 {
 
 	// -------------------------------------------------------------------------------------------------- constructor
 	constructor() ERC721('GoblinLoot', 'GLOOT') {
+		mintIsActive = true;
+
 		// TODO: batch mint reserves to team
-		batchMint(msg.sender, 10);
+		batchMint(msg.sender, 5);
 	}
 
 	// -------------------------------------------------------------------------------------------------- error handling
+	error MintInactive();
 	error NotEnoughLoot();
-	error NoSackExists();
 	error NotAuthorized();
 
 	// -------------------------------------------------------------------------------------------------- writes
@@ -324,19 +328,26 @@ contract GoblinLoot is ERC721 {
 	}
 
 	function mint() public {
+		if (!mintIsActive) revert MintInactive();
 		if (totalSupply == MAX_SUPPLY) revert NotEnoughLoot();
 
 		unchecked {
 			++totalSupply;
 		}
 		_safeMint(msg.sender, totalSupply);
+
+		// if this mint is last of the supply, close mint
+		// TODO: add timelock check
+		if (totalSupply == MAX_SUPPLY) {
+			mintIsActive = false;
+		}
 	}
 
-	// TODO: TEST THIS & FINISH THIS!!!!
 	function burn(uint256 _tokenId) public {
-		if (_tokenId == 0 || _tokenId > totalSupply) revert NoSackExists();
-		if (msg.sender != address(ownerOf(_tokenId))) revert NotAuthorized();
-		// TODO: allow approval address
+		if (
+			msg.sender != address(ownerOf(_tokenId)) ||
+			isApprovedForAll[ownerOf(_tokenId)][msg.sender]
+		) revert NotAuthorized();
 
 		_burn(_tokenId);
 	}
@@ -364,33 +375,41 @@ contract GoblinLoot is ERC721 {
 		);
 		string memory output = _sourceArray[rand % _sourceArray.length];
 
-		// for MATERIALS ONE
+		// heavy material prefix
 		if (
 			stringsAreEqual(_keyPrefix, 'WEAPON') ||
 			stringsAreEqual(_keyPrefix, 'HEAD') ||
 			stringsAreEqual(_keyPrefix, 'HAND')
 		) {
 			output = string(
-				abi.encodePacked(materialsOne[rand % materialsOne.length], ' ', output)
+				abi.encodePacked(
+					heavyMaterials[rand % heavyMaterials.length],
+					' ',
+					output
+				)
 			);
 		}
 
-		// for MATERIALS TWO
+		// light material prefix
 		if (
 			stringsAreEqual(_keyPrefix, 'BODY') || stringsAreEqual(_keyPrefix, 'FOOT')
 		) {
 			output = string(
-				abi.encodePacked(materialsTwo[rand % materialsTwo.length], ' ', output)
+				abi.encodePacked(
+					lightMaterials[rand % lightMaterials.length],
+					' ',
+					output
+				)
 			);
 		}
 
-		// for MATERIALS THREE
+		// jewelry prefix
 		if (
 			stringsAreEqual(_keyPrefix, 'NECK') || stringsAreEqual(_keyPrefix, 'RING')
 		) {
 			output = string(
 				abi.encodePacked(
-					materialsThree[rand % materialsThree.length],
+					jewelryPrefixes[rand % jewelryPrefixes.length],
 					' ',
 					output
 				)
@@ -399,14 +418,16 @@ contract GoblinLoot is ERC721 {
 
 		uint256 greatness = rand % 21;
 
+		// no prefix/suffix for either trinkets or items less than the greatness floor
 		if (
+			greatness < 7 ||
 			stringsAreEqual(_keyPrefix, 'TRINKET_ONE') ||
 			stringsAreEqual(_keyPrefix, 'TRINKET_TWO')
 		) {
 			return output;
 		}
 
-		// item both prefix & suffix
+		// both prefix & suffix
 		if (greatness > 17) {
 			return
 				string(
@@ -420,19 +441,15 @@ contract GoblinLoot is ERC721 {
 				);
 		}
 
-		// item with a prefix
+		// prefix only
 		if (greatness > 12) {
 			return
 				string(abi.encodePacked(prefixes[rand % prefixes.length], ' ', output));
 		}
 
-		// item with a suffix
-		if (greatness > 7) {
-			return
-				string(abi.encodePacked(output, ' ', suffixes[rand % suffixes.length]));
-		}
-
-		return output;
+		// suffix only
+		return
+			string(abi.encodePacked(output, ' ', suffixes[rand % suffixes.length]));
 	}
 
 	function getWeapon(uint256 _tokenId) public view returns (string memory) {
@@ -477,9 +494,6 @@ contract GoblinLoot is ERC721 {
 		override
 		returns (string memory)
 	{
-		// TODO: check if owner addres of token id is null address instead!!
-		if (_tokenId == 0 || _tokenId > totalSupply) revert NoSackExists();
-
 		string[19] memory parts;
 		parts[
 			0
