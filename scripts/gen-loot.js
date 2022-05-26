@@ -15,12 +15,17 @@ async function main() {
 
 	// fetch & parse minted loots in deployer wallet
 	const lootList = [];
+	const svgList = [];
+
 	for (let i = 0; i < deployerBalance.toNumber(); i++) {
 		const uri = await contract.tokenURI(i + 1);
 		const jsonBytes = hre.ethers.utils.base64.decode(uri.split(',')[1]);
 		const json = hre.ethers.utils.toUtf8String(jsonBytes);
 		const obj = JSON.parse(json);
-		const imgBytes = hre.ethers.utils.base64.decode(obj.image.split(',')[1]);
+		svgList.push({ svg: obj.image });
+    
+		const imgBase64 = obj.image.split(',')[1];
+		const imgBytes = hre.ethers.utils.base64.decode(imgBase64);
 		const svg = hre.ethers.utils.toUtf8String(imgBytes);
 		const svgJson = await parse(svg);
 		const nodes = svgJson.children.map(x => x.children).slice(2);
@@ -28,7 +33,8 @@ async function main() {
 		lootList.push(output);
 	}
 
-	console.log(lootList);
+	// console.log(lootList);
+	console.log(svgList);
 }
 
 main()
