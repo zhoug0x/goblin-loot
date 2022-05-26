@@ -22,9 +22,18 @@ describe('Contract Test', () => {
 	});
 
 	// --------------------------------------------------------------------- tests
-	it('Should fetch mint closing time', async () => {
+	it('Should activate mint on deployment', async () => {
+		expect(await contract.mintIsActive()).to.eq(true);
+	});
+
+	it('Should have mint closing time set', async () => {
+		const currentTime = hre.ethers.BigNumber.from(
+			Date.now().toString().slice(0, 10)
+		);
 		const closingTime = await contract.mintClosingTime();
-		console.log({closes: closingTime.toNumber(), timeNow: Date.now()})
+
+		expect(closingTime).to.not.eq(0);
+		expect(closingTime).to.be.gt(currentTime);
 	});
 
 	it('Should fetch sack URI', async () => {
@@ -32,7 +41,7 @@ describe('Contract Test', () => {
 		await expect(contract.tokenURI(totalSupply.toNumber())).to.not.be.reverted;
 	});
 
-	it('Should revert if fetching non-existant sack URI', async () => {
+	it('Should revert if fetching non-existent sack URI', async () => {
 		const totalSupply = await contract.totalSupply();
 		await expect(contract.tokenURI(totalSupply.toNumber() + 1)).to.be.reverted;
 	});

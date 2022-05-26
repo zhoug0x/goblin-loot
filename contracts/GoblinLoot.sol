@@ -7,9 +7,13 @@ pragma solidity ^0.8.0;
 
 // TODO: ascii art
 
+// TODO: something weird with the random function - call goblintown contract or smth
+
 // TODO: add creator addies, batch mint to them in the constructor
 
 // TODO: MAKE JSON DESCRIPTION GOBLIN-EY
+
+// TODO: batch mint 5 for a tip above 0 - ADD A WITHDRAWER
 
 import '@rari-capital/solmate/src/tokens/ERC721.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
@@ -19,11 +23,54 @@ import '@openzeppelin/contracts/utils/Base64.sol';
 contract GoblinLoot is ERC721, ReentrancyGuard {
 	using Strings for uint256;
 
+	// -------------------------------------------------------------------------------------------------- public state
 	uint256 public constant MAX_SUPPLY = 10000;
 	uint256 public constant MINT_DURATION = 24 hours;
 	uint256 public totalSupply;
 	uint256 public mintClosingTime;
 	bool public mintIsActive;
+
+	// -------------------------------------------------------------------------------------------------- item slot keys
+	uint256 internal constant SLOT_WEAP = 1;
+	uint256 internal constant SLOT_HEAD = 2;
+	uint256 internal constant SLOT_BODY = 3;
+	uint256 internal constant SLOT_HAND = 4;
+	uint256 internal constant SLOT_FOOT = 5;
+	uint256 internal constant SLOT_NECK = 6;
+	uint256 internal constant SLOT_RING = 7;
+	uint256 internal constant SLOT_TRI1 = 8;
+	uint256 internal constant SLOT_TRI2 = 9;
+
+	// -------------------------------------------------------------------------------------------------- materials
+	string[] public heavyMaterials = [
+		'bone',
+		'stone',
+		'bronze',
+		'wood',
+		'rubber',
+		'iron',
+		'gold',
+		'copper',
+		'tin',
+		'goblinsteel',
+		'scrap',
+		'reinforced'
+	];
+
+	string[] public lightMaterials = [
+		'linen',
+		'fur',
+		'leather',
+		'bark',
+		'cotton',
+		'cardboard',
+		'hide',
+		'scrap',
+		'burlap',
+		'goblinmail',
+		'paper',
+		'studded leather'
+	];
 
 	// -------------------------------------------------------------------------------------------------- items
 	string[] private weapons = [
@@ -48,15 +95,15 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 	];
 
 	string[] private headGear = [
-		'skull cap',
+		'cap',
 		'hood',
 		'helmet',
 		'crown',
 		'hoop earring',
 		'stud earring',
 		'earring',
-		'war bonnet',
-		'kettle hat',
+		'bonnet',
+		'kettle',
 		'pot lid',
 		'goggles',
 		'monocle',
@@ -116,13 +163,19 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'clogs'
 	];
 
-	string[] private necklaces = ['chain', 'amulet', 'pendant'];
+	string[] private necklaces = [
+		'chain',
+		'amulet',
+		'locket',
+		'pendant',
+		'choker',
+		'strand'
+	];
 
 	string[] private rings = [
 		'gold ring',
 		'silver ring',
 		'bronze ring',
-		'magic ring',
 		'iron ring'
 	];
 
@@ -194,48 +247,18 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'whip'
 	];
 
-	string[] private heavyMaterials = [
-		'bone',
-		'stone',
-		'bronze',
-		'wood',
-		'rubber',
-		'iron',
-		'gold',
-		'copper',
-		'tin',
-		'goblinsteel',
-		'scrap',
-		'reinforced'
-	];
-
-	string[] private lightMaterials = [
-		'linen',
-		'fur',
-		'leather',
-		'bark',
-		'cotton',
-		'cardboard',
-		'hide',
-		'scrap',
-		'burlap',
-		'goblinmail',
-		'paper',
-		'studded leather'
-	];
-
 	// -------------------------------------------------------------------------------------------------- prefix/suffix
 
 	string[] private jewelryPrefixes = [
 		'crude',
 		'flawed',
 		'rusty',
-		'nice',
+		'perfect',
 		'fine',
-		'glowing',
+		'flawless',
 		'tainted',
-		'rare',
-		'enchanted',
+		'chipped',
+		'worn',
 		'stolen'
 	];
 
@@ -243,6 +266,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'shimmering',
 		'shiny',
 		'slick',
+		'glowing',
 		'polished',
 		'damp',
 		'blighty',
@@ -309,9 +333,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 	constructor() ERC721('GoblinLoot', 'GLOOT') {
 		mintClosingTime = block.timestamp + MINT_DURATION;
 		mintIsActive = true;
-
-		// TODO: batch mint reserves to team
-		batchMint(msg.sender, 5);
+		batchMint(msg.sender, 10);
 	}
 
 	// -------------------------------------------------------------------------------------------------- error handling
@@ -322,6 +344,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 
 	// -------------------------------------------------------------------------------------------------- writes
 	function batchMint(address _recipient, uint256 _amount) internal {
+		if (!mintIsActive) revert MintInactive();
 		if (_amount > MAX_SUPPLY - totalSupply) revert NotEnoughLoot();
 		unchecked {
 			for (uint256 i = 1; i < _amount + 1; ++i) {
@@ -356,139 +379,146 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 	}
 
 	// -------------------------------------------------------------------------------------------------- reads
-	function random(string memory _input) internal pure returns (uint256) {
-		return uint256(keccak256(abi.encodePacked('AUU', _input, 'UUGH')));
+
+	function isHeavyMaterial(uint256 _key) internal pure returns (bool) {
+		return (_key == SLOT_WEAP || _key == SLOT_HEAD || _key == SLOT_HAND);
 	}
 
-	function stringsAreEqual(string memory _a, string memory _b)
+	function isLightMaterial(uint256 _key) internal pure returns (bool) {
+		return (_key == SLOT_BODY || _key == SLOT_FOOT);
+	}
+
+	function isTrinket(uint256 _key) internal pure returns (bool) {
+		return (_key == SLOT_TRI1 || _key == SLOT_TRI2);
+	}
+
+	function isJewelry(uint256 _key) internal pure returns (bool) {
+		return (_key == SLOT_NECK || _key == SLOT_RING);
+	}
+
+	function random(uint256 _seedOne, uint256 _seedTwo)
 		internal
 		pure
-		returns (bool)
+		returns (uint256)
 	{
-		return (keccak256(abi.encodePacked(_a)) == keccak256(abi.encodePacked(_b)));
+		return
+			uint256(
+				keccak256(
+					abi.encodePacked('AUuuU', _seedOne, 'UuUu', _seedTwo, 'uUgHH')
+				)
+			);
+	}
+
+	function join(string memory _itemOne, string memory _itemTwo)
+		internal
+		pure
+		returns (string memory)
+	{
+		return string(abi.encodePacked(_itemOne, ' ', _itemTwo));
 	}
 
 	function pluck(
 		uint256 _tokenId,
-		string memory _keyPrefix,
+		uint256 _slotKey,
 		string[] memory _sourceArray
 	) internal view returns (string memory) {
-		uint256 rand = random(
-			string(abi.encodePacked(_keyPrefix, Strings.toString(_tokenId)))
-		);
+		uint256 rand = random(_tokenId, _slotKey);
+		uint256 greatness = rand % 69;
 		string memory output = _sourceArray[rand % _sourceArray.length];
 
-		// heavy material prefix
-		if (
-			stringsAreEqual(_keyPrefix, 'WEAPON') ||
-			stringsAreEqual(_keyPrefix, 'HEAD') ||
-			stringsAreEqual(_keyPrefix, 'HAND')
-		) {
-			output = string(
-				abi.encodePacked(
-					heavyMaterials[rand % heavyMaterials.length],
-					' ',
-					output
-				)
-			);
+		if (isHeavyMaterial(_slotKey)) {
+			output = join(heavyMaterials[rand % heavyMaterials.length], output);
 		}
 
-		// light material prefix
-		if (
-			stringsAreEqual(_keyPrefix, 'BODY') || stringsAreEqual(_keyPrefix, 'FOOT')
-		) {
-			output = string(
-				abi.encodePacked(
-					lightMaterials[rand % lightMaterials.length],
-					' ',
-					output
-				)
-			);
+		if (isLightMaterial(_slotKey)) {
+			output = join(lightMaterials[rand % lightMaterials.length], output);
 		}
 
-		// jewelry prefix
-		if (
-			stringsAreEqual(_keyPrefix, 'NECK') || stringsAreEqual(_keyPrefix, 'RING')
-		) {
-			output = string(
-				abi.encodePacked(
-					jewelryPrefixes[rand % jewelryPrefixes.length],
-					' ',
-					output
-				)
-			);
+		if (isJewelry(_slotKey)) {
+			output = join(jewelryPrefixes[rand % jewelryPrefixes.length], output);
 		}
 
-		uint256 greatness = rand % 21;
-
-		// no prefix/suffix for either trinkets or items less than the greatness floor
-		if (
-			greatness < 7 ||
-			stringsAreEqual(_keyPrefix, 'TRINKET_ONE') ||
-			stringsAreEqual(_keyPrefix, 'TRINKET_TWO')
-		) {
+		if (greatness < 23 || isTrinket(_slotKey)) {
 			return output;
 		}
 
 		// both prefix & suffix
-		if (greatness > 17) {
+		if (greatness > 55) {
+			// if jewelry, apply only the suffix
+			if (isJewelry(_slotKey)) {
+				return join(output, suffixes[rand % suffixes.length]);
+			}
+
 			return
-				string(
-					abi.encodePacked(
-						prefixes[rand % prefixes.length],
-						' ',
-						output,
-						' ',
-						suffixes[rand % suffixes.length]
-					)
+				join(
+					join(prefixes[rand % prefixes.length], output),
+					suffixes[rand % suffixes.length]
 				);
 		}
 
 		// prefix only
-		if (greatness > 12) {
-			return
-				string(abi.encodePacked(prefixes[rand % prefixes.length], ' ', output));
+		if (greatness > 40 && !isJewelry(_slotKey)) {
+			return join(prefixes[rand % prefixes.length], output);
 		}
 
 		// suffix only
-		return
-			string(abi.encodePacked(output, ' ', suffixes[rand % suffixes.length]));
+		return join(output, suffixes[rand % suffixes.length]);
 	}
 
 	function getWeapon(uint256 _tokenId) public view returns (string memory) {
-		return pluck(_tokenId, 'WEAPON', weapons);
+		return pluck(_tokenId, SLOT_WEAP, weapons);
 	}
 
 	function getHead(uint256 _tokenId) public view returns (string memory) {
-		return pluck(_tokenId, 'HEAD', headGear);
+		return pluck(_tokenId, SLOT_HEAD, headGear);
 	}
 
 	function getBody(uint256 _tokenId) public view returns (string memory) {
-		return pluck(_tokenId, 'BODY', bodyGear);
+		return pluck(_tokenId, SLOT_BODY, bodyGear);
 	}
 
 	function getHand(uint256 _tokenId) public view returns (string memory) {
-		return pluck(_tokenId, 'HAND', handGear);
+		return pluck(_tokenId, SLOT_HAND, handGear);
 	}
 
 	function getFoot(uint256 _tokenId) public view returns (string memory) {
-		return pluck(_tokenId, 'FOOT', footGear);
+		return pluck(_tokenId, SLOT_FOOT, footGear);
 	}
 
 	function getNeck(uint256 _tokenId) public view returns (string memory) {
-		return pluck(_tokenId, 'NECK', necklaces);
+		return pluck(_tokenId, SLOT_NECK, necklaces);
 	}
 
 	function getRing(uint256 _tokenId) public view returns (string memory) {
-		return pluck(_tokenId, 'RING', rings);
+		return pluck(_tokenId, SLOT_RING, rings);
 	}
 
 	function getTrinketOne(uint256 _tokenId) public view returns (string memory) {
-		return pluck(_tokenId, 'TRINKET_ONE', trinkets);
+		return pluck(_tokenId, SLOT_TRI1, trinkets);
 	}
 
 	function getTrinketTwo(uint256 _tokenId) public view returns (string memory) {
-		return pluck(_tokenId, 'TRINKET_TWO', trinkets);
+		return pluck(_tokenId, SLOT_TRI2, trinkets);
+	}
+
+	function getSacksOwned(address _address)
+		public
+		view
+		returns (uint256[] memory ownedIds)
+	{
+		uint256 balance = _balanceOf[_address];
+		uint256 idCounter = 1;
+		uint256 ownedCounter = 0;
+		ownedIds = new uint256[](balance);
+
+		while (ownedCounter < balance && idCounter < MAX_SUPPLY + 1) {
+			address ownerAddress = _ownerOf[idCounter];
+			if (ownerAddress == _address) {
+				ownedIds[ownedCounter] = idCounter;
+				ownedCounter++;
+			}
+			idCounter++;
+		}
 	}
 
 	function tokenURI(uint256 _tokenId)
@@ -584,25 +614,5 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		output = string(abi.encodePacked('data:application/json;base64,', json));
 
 		return output;
-	}
-
-	function getSacksOwned(address _address)
-		public
-		view
-		returns (uint256[] memory ownedIds)
-	{
-		uint256 balance = _balanceOf[_address];
-		uint256 idCounter = 1;
-		uint256 ownedCounter = 0;
-		ownedIds = new uint256[](balance);
-
-		while (ownedCounter < balance && idCounter < MAX_SUPPLY + 1) {
-			address ownerAddress = _ownerOf[idCounter];
-			if (ownerAddress == _address) {
-				ownedIds[ownedCounter] = idCounter;
-				ownedCounter++;
-			}
-			idCounter++;
-		}
 	}
 }
