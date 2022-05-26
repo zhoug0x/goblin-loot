@@ -60,7 +60,7 @@ contract GoblinLoot is ERC721 {
 	address private zhoug = 0xc99547f73B0Aa2C69E56849e8986137776D72474;
 
 	// -------------------------------------------------------------------------------------------------- kOonstrukktorr
-	constructor() ERC721('GoblinLoot', 'GLOOT') {
+	constructor() ERC721('GoblinLoot', 'gObLooT') {
 		tipWithdrawer = msg.sender;
 		mintClosingTime = block.timestamp + MINT_DURATION;
 		mintIsActive = true;
