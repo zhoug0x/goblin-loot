@@ -10,19 +10,32 @@ async function main() {
 	const contract = await contractFactory.deploy();
 	await contract.deployed();
 	const deployerBalance = await contract.balanceOf(deployer.address);
-	console.log('Contract deployed to: ', contract.address);
-	console.log('Deployer wallet balance: ', deployerBalance.toNumber());
 
 	// fetch & parse minted loots in deployer wallet
+	const jsonList = [];
+	const objList = [];
 	const lootList = [];
-	const svgList = [];
+
 
 	for (let i = 0; i < deployerBalance.toNumber(); i++) {
 		const uri = await contract.tokenURI(i + 1);
 		const jsonBytes = hre.ethers.utils.base64.decode(uri.split(',')[1]);
+
 		const json = hre.ethers.utils.toUtf8String(jsonBytes);
+		jsonList.push(json);
+
+		// DEBUG JSON METADATA OUTPUT HERE
+		// console.log(json)
+		// return
+		// ------
+		
 		const obj = JSON.parse(json);
-		svgList.push({ svg: obj.image });
+		objList.push(obj);
+
+		// DEBUG PARSED OBJECT HERE
+		// console.log(obj)
+		// return
+		// ------
 
 		const imgBase64 = obj.image.split(',')[1];
 		const imgBytes = hre.ethers.utils.base64.decode(imgBase64);
@@ -33,8 +46,9 @@ async function main() {
 		lootList.push(output);
 	}
 
-	console.log(lootList);
-	// console.log(svgList[0].svg);
+	console.log(jsonList);
+	// console.log(objList);
+	// console.log(lootList);
 }
 
 main()

@@ -1,13 +1,46 @@
 //SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.0;
 
-// xxx GOBLIN LOOT xxx
-
-// TODO: !!! ctrl+F all the TODOs before deployment... !!!
-
-// TODO: ascii art
-
-// TODO: PUT OS-FRIENDLY TRAITS ON CHAIN
+//
+// oooOooooo looka fren wats dis... shIneez?
+// YUMMZ many manY shineEz, deez mine now teeheeE
+// wat? wat it is?
+// AAAAAAAUUUUUGGGHHHHH shineez on da blokcHin?
+// waaaaaaaaitttt you wan sum?
+// okieee fren, u use how uuu want teeheeE...
+//
+//
+//
+//   _,   _,  __  ,  ___,,  , ,    _,  _,  ___,
+//  / _  / \,'|_) | ' |  |\ | |   / \,/ \,' |
+// '\_|`'\_/ _|_)'|___|_,|'\|'|__'\_/'\_/   |
+//   _|  '  '       '    '  `   ' '   '     '
+//  '      '      '            '          '
+//
+//             _    |.-""-.)    /\
+//            | \   /   .= \)  /  \
+//            |  \ / =. --  \ /  ) |   '
+//   '        \ ( \   o\/0   /     /
+//             \_, '- /   \   ,___/
+//               /    \__ /    \
+//               \, ___/\___,  /    '
+//        '       \  ----     /            '
+//                 \         /
+//    '             '--___--'
+//                     [ ]             '
+//            '       { }
+//                     [ ]    '             '
+//       '            { }
+//                     [ ]           '
+//
+//
+//
+// inspired by goblintown, the loot project, settlements...
+//
+// a cc0 project from imp0ster, zhoug & jaythin staythin...
+//
+//                             ...enJoy... teEEhheeeEEEe...
+//
 
 import '@rari-capital/solmate/src/tokens/ERC721.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
@@ -16,29 +49,26 @@ import '@openzeppelin/contracts/utils/Base64.sol';
 contract GoblinLoot is ERC721 {
 	using Strings for uint256;
 
-	uint256 public constant MAX_SUPPLY = 10000;
-	uint256 public constant MINT_DURATION = 24 hours;
+	uint256 public constant MAX_SUPPLY = 5000;
+	uint256 public constant MINT_DURATION = 48 hours;
 	uint256 public totalSupply;
 	uint256 public mintClosingTime;
 	bool public mintIsActive;
 	address public tipWithdrawer;
-	
+
 	address private imp0ster = 0x023006cED81c7Bf6D17A5bC1e1B40104114d0019;
 	address private zhoug = 0xc99547f73B0Aa2C69E56849e8986137776D72474;
 
-	// -------------------------------------------------------------------------------------------------- constructor
+	// -------------------------------------------------------------------------------------------------- kOonstrukktorr
 	constructor() ERC721('GoblinLoot', 'GLOOT') {
 		tipWithdrawer = msg.sender;
 		mintClosingTime = block.timestamp + MINT_DURATION;
 		mintIsActive = true;
-
-		// TODO: uncomment imp & change to sender to zhoug when deploying to mainnet!
-		// _batchMint(imp0ster, 50);
-		// _batchMint(zhoug, 50);
-		_batchMint(msg.sender, 50);
+		_batchMint(imp0ster, 50);
+		_batchMint(zhoug, 50);
 	}
 
-	// -------------------------------------------------------------------------------------------------- slot keys
+	// -------------------------------------------------------------------------------------------------- sLott KeYsss
 	uint256 internal constant SLOT_WEAP = 1;
 	uint256 internal constant SLOT_HEAD = 2;
 	uint256 internal constant SLOT_BODY = 3;
@@ -49,7 +79,7 @@ contract GoblinLoot is ERC721 {
 	uint256 internal constant SLOT_TRI1 = 8;
 	uint256 internal constant SLOT_TRI2 = 9;
 
-	// -------------------------------------------------------------------------------------------------- materials
+	// -------------------------------------------------------------------------------------------------- matEriallss
 	string[] internal heavyMaterials = [
 		'bone',
 		'stone',
@@ -79,7 +109,7 @@ contract GoblinLoot is ERC721 {
 		'snakeskin '
 	];
 
-	// -------------------------------------------------------------------------------------------------- items
+	// -------------------------------------------------------------------------------------------------- iTEMs
 	string[] internal weapons = [
 		'club',
 		'scythe',
@@ -274,7 +304,7 @@ contract GoblinLoot is ERC721 {
 		'wineskin'
 	];
 
-	// -------------------------------------------------------------------------------------------------- prefix/suffix
+	// -------------------------------------------------------------------------------------------------- preEefiX aN SUFfixxx
 	string[] internal jewelryPrefixes = [
 		'crude',
 		'flawed',
@@ -361,20 +391,20 @@ contract GoblinLoot is ERC721 {
 		'of the grave'
 	];
 
-	// -------------------------------------------------------------------------------------------------- errors & modifiers
+	// -------------------------------------------------------------------------------------------------- eRRorzZ aaN modIffieerss
 	error MintInactive();
 	error NotEnoughLoot();
 	error NotAuthorized();
 	error NotMinted();
 
-	modifier closeMint() {
+	modifier mintControl() {
 		_;
 		if (totalSupply == MAX_SUPPLY || block.timestamp > mintClosingTime) {
 			mintIsActive = false;
 		}
 	}
 
-	// -------------------------------------------------------------------------------------------------- writes
+	// -------------------------------------------------------------------------------------------------- wRiTez
 	function _batchMint(address _recipient, uint256 _amount) private {
 		unchecked {
 			for (uint256 i = 1; i < _amount + 1; ++i) {
@@ -384,7 +414,7 @@ contract GoblinLoot is ERC721 {
 		}
 	}
 
-	function mint() public closeMint {
+	function mint() public mintControl {
 		if (!mintIsActive) revert MintInactive();
 		if (totalSupply == MAX_SUPPLY) revert NotEnoughLoot();
 		unchecked {
@@ -393,7 +423,7 @@ contract GoblinLoot is ERC721 {
 		_safeMint(msg.sender, totalSupply);
 	}
 
-	function mintThreeWithATip() public payable closeMint {
+	function mintThreeWithATip() public payable mintControl {
 		if (!mintIsActive) revert MintInactive();
 		if (totalSupply + 3 > MAX_SUPPLY) revert NotEnoughLoot();
 		if (msg.value <= 0) revert NotAuthorized();
@@ -419,7 +449,7 @@ contract GoblinLoot is ERC721 {
 		require(os);
 	}
 
-	// -------------------------------------------------------------------------------------------------- reads
+	// -------------------------------------------------------------------------------------------------- rEEdz
 	function isHeavyMaterial(uint256 _key) internal pure returns (bool) {
 		return (_key == SLOT_WEAP || _key == SLOT_HEAD || _key == SLOT_HAND);
 	}
@@ -550,14 +580,7 @@ contract GoblinLoot is ERC721 {
 		return (random(_tokenId, 420) % 10) + 1;
 	}
 
-	function tokenURI(uint256 _tokenId)
-		public
-		view
-		override
-		returns (string memory)
-	{
-		if (_ownerOf[_tokenId] == address(0)) revert NotMinted();
-
+	function buildSVG(uint256 _tokenId) internal view returns (string memory) {
 		string[24] memory parts;
 		parts[
 			0
@@ -614,18 +637,89 @@ contract GoblinLoot is ERC721 {
 				parts[16]
 			)
 		);
-		svg = string(
+		return
+			string(
+				abi.encodePacked(
+					svg,
+					parts[17],
+					parts[18],
+					parts[19],
+					parts[20],
+					parts[21],
+					parts[22],
+					parts[23]
+				)
+			);
+	}
+
+	function buildAttr(string memory _traitType, string memory _value)
+		internal
+		pure
+		returns (string memory)
+	{
+		return
+			string(
+				abi.encodePacked(
+					'{"trait_type": "',
+					_traitType,
+					'", "value": "',
+					_value,
+					'"},'
+				)
+			);
+	}
+
+	function buildAttrList(uint256 _tokenId)
+		internal
+		view
+		returns (string memory)
+	{
+		string[12] memory parts;
+		parts[0] = '[';
+		parts[1] = buildAttr('weapon', getWeapon(_tokenId));
+		parts[2] = buildAttr('head', getHead(_tokenId));
+		parts[3] = buildAttr('body', getBody(_tokenId));
+		parts[4] = buildAttr('hand', getHand(_tokenId));
+		parts[5] = buildAttr('foot', getFoot(_tokenId));
+		parts[6] = buildAttr('neck', getNeck(_tokenId));
+		parts[7] = buildAttr('ring', getRing(_tokenId));
+		parts[8] = buildAttr('trinket_one', getTrinket1(_tokenId));
+		parts[9] = buildAttr('trinket_two', getTrinket2(_tokenId));
+		parts[10] = buildAttr('trinket_three', getTrinket3(_tokenId));
+		parts[11] = string(
 			abi.encodePacked(
-				svg,
-				parts[17],
-				parts[18],
-				parts[19],
-				parts[20],
-				parts[21],
-				parts[22],
-				parts[23]
+				'{"trait_type": "',
+				'shinee',
+				'", "value": ',
+				Strings.toString(getShinee(_tokenId)),
+				'}]'
 			)
 		);
+
+		string memory output = string(
+			abi.encodePacked(
+				parts[0],
+				parts[1],
+				parts[2],
+				parts[3],
+				parts[4],
+				parts[5],
+				parts[6],
+				parts[7],
+				parts[8]
+			)
+		);
+
+		return string(abi.encodePacked(output, parts[9], parts[10], parts[11]));
+	}
+
+	function tokenURI(uint256 _tokenId)
+		public
+		view
+		override
+		returns (string memory)
+	{
+		if (_ownerOf[_tokenId] == address(0)) revert NotMinted();
 
 		string memory json = Base64.encode(
 			bytes(
@@ -633,9 +727,11 @@ contract GoblinLoot is ERC721 {
 					abi.encodePacked(
 						'{"name": "sack #',
 						Strings.toString(_tokenId),
-						'", "description": "oooOooooo looka fren wats dis... shIneez?\\nYUMMZ\\n\\nmany manY shineEz, deez mine now teeheeE\\n\\nwat? wat it is?\\nAAAAAAAUUUUUGGGHHHHH shineez on da blockcHin?\\n\\nwaaaaaaaaitttt you wan sum?\\nokieee fren, u use how uuu want teeheeE", "image": "data:image/svg+xml;base64,',
-						Base64.encode(bytes(svg)),
-						'"}'
+						'", "description": "oooOooooo looka fren wats dis... shIneez?\\nYUMMZ\\n\\nmany manY shineEz, deez mine now teeheeE\\n\\nwat? wat it is?\\nAAAAAAAUUUUUGGGHHHHH shineez on da blokcHin?\\n\\nwaaaaaaaaitttt you wan sum?\\nokieee fren, u use how uuu want teeheeE", "image": "data:image/svg+xml;base64,',
+						Base64.encode(bytes(buildSVG(_tokenId))),
+						'", "attributes": ',
+						buildAttrList(_tokenId),
+						'}'
 					)
 				)
 			)
