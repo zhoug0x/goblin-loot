@@ -13,7 +13,9 @@ pragma solidity ^0.8.0;
 
 // TODO: MAKE JSON DESCRIPTION GOBLIN-EY
 
-// TODO: batch mint 5 for a tip above 0 - ADD A WITHDRAWER
+// TODO: in constructor, make msg.sender = deployer --> deployer has immutable owner perms!
+
+// TODO: batch mint 5 for a tip above 0 - DEPLOYER CAN WITHDRAW
 
 import '@rari-capital/solmate/src/tokens/ERC721.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
@@ -68,30 +70,29 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'scrap',
 		'burlap',
 		'goblinmail',
-		'paper',
-		'studded leather'
+		'paper'
 	];
 
 	// -------------------------------------------------------------------------------------------------- items
 	string[] private weapons = [
 		'club',
 		'scythe',
+		'hammer',
 		'sickle',
 		'longspear',
 		'shortspear',
-		'quarterstaff',
-		'sling',
+		'staff',
 		'slingshot',
-		'short bow',
+		'shortbow',
+		'longbow',
 		'mace',
 		'dagger',
 		'totem',
 		'wand',
 		'pickaxe',
 		'hatchet',
-		'knife-on-a-stick',
-		'splitting axe',
-		'banner'
+		'maul',
+		'knife'
 	];
 
 	string[] private headGear = [
@@ -99,32 +100,33 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'hood',
 		'helmet',
 		'crown',
-		'hoop earring',
-		'stud earring',
 		'earring',
+		'top hat',
 		'bonnet',
 		'kettle',
 		'pot lid',
 		'goggles',
 		'monocle',
+		'bowler',
 		'eyepatch'
 	];
 
 	string[] private bodyGear = [
 		'husk',
 		'cloak',
+		'pads',
 		'pauldrons',
+		'waistcoat',
 		'loincloth',
+		'trousers',
 		'robe',
 		'rags',
 		'harness',
 		'tunic',
 		'wrappings',
 		'cuirass',
-		'half-chest armor',
-		'crop-top',
+		'crop top',
 		'sash',
-		'sashes',
 		'toga',
 		'belt',
 		'vest',
@@ -133,7 +135,6 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 
 	string[] private handGear = [
 		'hooks',
-		'ring set',
 		'gloves',
 		'bracers',
 		'gauntlets',
@@ -168,8 +169,7 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'amulet',
 		'locket',
 		'pendant',
-		'choker',
-		'strand'
+		'choker'
 	];
 
 	string[] private rings = [
@@ -185,28 +185,38 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'tooth',
 		'jawbone',
 		'pickle',
+		'pipe',
 		'ruby',
 		'herb pouch',
+		'sundial',
+		'gasket',
 		'dandelions',
 		'sapphire',
 		'diamond',
+		'clock',
+		'cog',
 		'mushroom',
 		'emerald',
+		'bellows',
 		'sardines',
+		'sulfur',
+		'sailcloth',
 		'wineskin',
 		'brush',
 		'comb',
+		'shears',
 		'candle',
 		'candlestick',
 		'torch',
 		'scratcher',
-		'magnifying glass',
+		'gaslamp',
 		'seeds',
 		'beans',
-		'thingamabob',
-		'thingamajig',
+		'???',
+		'quicksilver',
 		'shoehorn',
-		'loose nails',
+		'nails',
+		'screws',
 		'dice',
 		'skull',
 		'blueberries',
@@ -215,15 +225,19 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'egg',
 		'meat',
 		'scraper',
+		'oil',
 		'spoon',
 		'chalk',
 		'charcoal',
 		'twigs',
 		'sweets',
+		'thread',
+		'sewing needle',
 		'amethyst',
 		'obsidian',
 		'mallet',
 		'pebbles',
+		'periscope',
 		'spyglass',
 		'grappling hook',
 		'rope',
@@ -256,14 +270,17 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'perfect',
 		'fine',
 		'flawless',
+		'noble',
+		'embossed',
 		'tainted',
 		'chipped',
 		'worn',
+		'sooty'
 		'stolen'
 	];
 
 	string[] private prefixes = [
-		'shimmering',
+		'sparkling',
 		'shiny',
 		'slick',
 		'glowing',
@@ -275,9 +292,8 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'doomed',
 		'gloomy',
 		'grim',
-		'oozy',
-		'undead',
-		'dead',
+		'makeshift',
+		'noxious',
 		'hairy',
 		'mossy',
 		'stinky',
@@ -286,17 +302,21 @@ contract GoblinLoot is ERC721, ReentrancyGuard {
 		'spiky',
 		'cursed',
 		'scaly',
-		'ghoulish',
 		'crusty',
-		'skyborn',
 		'damned',
 		'briny',
 		'dirty',
 		'slimy',
 		'muddy',
 		'lucky',
+		"artificer's",
+		"wayfarer's",
 		"thief's",
+		"captain's",
+		"henchman's",
+		"daredevil's",
 		"bandit's",
+		"inspector's",
 		"raider's",
 		"miner's",
 		"builder's"
