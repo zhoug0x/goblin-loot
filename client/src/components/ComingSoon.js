@@ -1,5 +1,10 @@
 import styled, { keyframes } from 'styled-components'
-import { TWITTER_LINK, ETHERSCAN_LINK, OPENSEA_LINK } from '../config'
+import {
+	TWITTER_ZHOUG,
+	TWITTER_IMP0STER,
+	ETHERSCAN_LINK,
+	OPENSEA_LINK,
+} from '../config'
 import { ExtLink } from './Shared'
 
 const RESPONSIVE_BREAKPOINT = '786px'
@@ -36,10 +41,10 @@ const ComingSoonContent = styled.div`
 
 const TitleHeader = styled.h1`
 	font-weight: bold;
-	font-size: 6em;
+	font-size: 7em;
 	text-align: center;
 	letter-spacing: -0.075em;
-	margin-bottom: 0.25em;
+	margin-bottom: 0.33em;
 	animation: ${float} 2s ease-in-out;
 	animation-iteration-count: infinite;
 
@@ -67,8 +72,16 @@ const FollowLink = styled.p`
 	font-size: 1.1em;
 	margin-bottom: 3em;
 
+	& > a {
+		font-size: 1.2em;
+	}
+
 	@media (min-width: ${RESPONSIVE_BREAKPOINT}) {
 		font-size: 1.25em;
+
+		& > a {
+			font-size: 1.5em;
+		}
 	}
 `
 
@@ -81,10 +94,15 @@ const Swords = styled.div`
 		animation: ${wiggle} 1s ease-in-out;
 		animation-iteration-count: infinite;
 		font-size: 5em;
+
+		@media (min-width: ${RESPONSIVE_BREAKPOINT}) {
+			font-size: 7em;
+		}
 	}
 `
 
 const Links = styled.div`
+	font-size: 1.25em;
 	text-align: center;
 	font-weight: bold;
 `
@@ -101,15 +119,16 @@ const ComingSoon = () => {
 				</div>
 				<div style={{ transform: 'rotate(-2.5deg)' }}>
 					<FollowLink>
-						<ExtLink href={TWITTER_LINK}>fₒₗₗₒw zₕₒᵤg fₑᵣ ᵤₚdₒₒₜₛ</ExtLink>
+						fₒₗₗₒw <ExtLink href={TWITTER_ZHOUG}>𝖟𝖍𝖔𝖚𝖌</ExtLink> ₐₙ dₐ{' '}
+						<ExtLink href={TWITTER_IMP0STER}>𝖎𝖒𝖕0𝖘𝖙𝖊𝖗</ExtLink> fₑᵣ ᵤₚdₒₒₜₛ
 					</FollowLink>
 				</div>
 				<Swords>
 					<div>⚔️</div>
 				</Swords>
 				<Links>
-					<ExtLink href={ETHERSCAN_LINK}>contract</ExtLink> |{' '}
-					<ExtLink href={OPENSEA_LINK}>opensea</ExtLink>
+					<ExtLink href={ETHERSCAN_LINK}>ᶜᴼᴺᵀᴿᴬᶜᵀ</ExtLink> |{' '}
+					<ExtLink href={OPENSEA_LINK}>ᴼᴾᴱᴺˢᴱᴬ</ExtLink>
 				</Links>
 			</ComingSoonContent>
 		</ComingSoonWrapper>
