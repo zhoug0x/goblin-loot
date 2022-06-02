@@ -1,3 +1,5 @@
+export const COMING_SOON = true
+
 export const CHAIN_ID = 1
 export const CONTRACT_ADDRESS = '0x14d7c1ffe0581e766696ea99e62448de09270339'
 

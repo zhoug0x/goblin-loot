@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
+import { COMING_SOON } from './config'
 import { useWeb3Context } from './context/Web3Context'
 import { Container } from './components/Shared'
 import NavBar from './components/NavBar'
 import Showcase from './components/Showcase'
+import ComingSoon from './components/ComingSoon'
 
 const MainContainer = styled(Container)`
 	display: flex;
@@ -41,7 +43,8 @@ const App = () => {
 		})
 	}
 
-	// TODO: create proper loading screen
+	if (COMING_SOON) return <ComingSoon />
+
 	if (isLoading) {
 		return (
 			<div

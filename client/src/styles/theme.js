@@ -4,9 +4,9 @@ const theme = {
 		secondary: 'sans-serif',
 	},
 	color: {
-		background: 'white',
-		text: '#111',
-		link: 'black',
+		background: '#242910',
+		text: '#AFB886',
+		link: '#d4d9bf',
 	},
 	breakpoint: {
 		sm: 576,
