@@ -7,11 +7,11 @@ import App from './App'
 
 ReactDOM.render(
 	<React.StrictMode>
-		<Web3Provider>
+		{/* <Web3Provider> */}
 			<StylesProvider>
 				<App />
 			</StylesProvider>
-		</Web3Provider>
+		{/* </Web3Provider> */}
 	</React.StrictMode>,
 	document.getElementById('root')
 )
