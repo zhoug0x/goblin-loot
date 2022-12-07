@@ -5,6 +5,9 @@
 **5000** sacks of **goblin loot**  
 **free** mint  
 100% **onchain**  
+
+- [etherscan](https://etherscan.io/address/0x14d7c1ffe0581e766696ea99e62448de09270339)
+- [opensea](https://opensea.io/collection/goblinloot)
   
 <img alt="goblin loot NFTs rapidly springing out of the fiery goblin loot forge" width="500" src="https://github.com/zhoug0x/goblin-loot/blob/main/goblin-loot.png?raw=true" />
   
@@ -31,6 +34,4 @@ generate goblin loots and print to the console to debug the output NFTs!
 npm run gen-loot
 ```
 
-## links
-- [etherscan](https://etherscan.io/address/0x14d7c1ffe0581e766696ea99e62448de09270339)
-- [opensea](https://opensea.io/collection/goblinloot)
+## have fun!
