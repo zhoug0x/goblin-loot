@@ -5,7 +5,9 @@
 **5000** sacks of **goblin loot**  
 **free** mint  
 100% **onchain**  
-
+  
+<img alt="goblin loot NFTs rapidly springing out of the fiery goblin loot forge" width="500" src="https://github.com/zhoug0x/goblin-loot/blob/main/goblin-loot.png?raw=true" />
+  
 ## to run locally
 1. install dependencies
     ```
