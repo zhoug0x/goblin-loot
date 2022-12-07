@@ -2,6 +2,10 @@
 
 > a CC0 jam - what if [Loot](https://www.lootproject.com) was found in the [goblintown](https://goblintown.wtf) universe?
 
+**5000** sacks of **goblin loot**  
+**free** mint  
+100% **onchain**  
+
 ## to run locally
 1. install dependencies
     ```
