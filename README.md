@@ -1,6 +1,6 @@
 # goblin loot
 
-> a CC0 jam - what if Loot was generated in the goblintown universe?
+> a CC0 jam - what if [Loot](https://www.lootproject.com) was found in the [goblintown](https://goblintown.wtf) universe?
 
 ## to run locally
 1. install dependencies
